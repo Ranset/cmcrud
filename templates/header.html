@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Flask CRUD  
+{% endblock %}
+
+{% block body %}
+    <div class="jumbotron p-3">
+        <dev class="well text-center">
+            <h1>Base de Datos CM</h1>
+        </dev>
+    </div>
+    {# {% if current_user.is_authenticated %}
+        <div>
+            Hola {{current_user.name}} | <a href={{ url_for('logout' ) }}>logout</a>
+        </div>
+    {% else %}
+    <div>
+        <a href={{ url_for('login' ) }}>Entrar</a> | <a href={{ url_for('register' ) }}>Registrarse</a>
+    </div>
+    {% endif %} #}
+{% endblock %}

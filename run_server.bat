@@ -1,0 +1,1 @@
+waitress-serve --listen=*:8080 main:app

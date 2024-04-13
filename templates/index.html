@@ -12,7 +12,7 @@
                 <div class="jumbotron p-3">
                     <h2>Gestión de <b>Productos</b> <button type="button" class="btn btn-success float-right" data-toggle="modal" data-target="#mymodal">Agregar Productos</button></h2>
 
-                    <!-- Successful Employee added message -->
+                    <!-- Mensaje de producto agregado -->
                     {% with messages = get_flashed_messages()  %}
 
                         {% if messages %}
@@ -41,46 +41,68 @@
                         {% for row in all_data %}
 
                         <tr>
-                            <td>{{row.id}}</td>
-                            <td>{{row.name}}</td>
-                            <td>{{row.email}}</td>
-                            <td>{{row.phone}}</td>
+                            <td>{{row.sku}}</td>
+                            <td>{{row.nombre_producto}}</td>
+                            <td>{{row.categoria}}</td>
+                            <td>{{row.sub_categoria}}</td>
                             <td>
-                                <a href="" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#modaledit{{row.id}}">Edit</a>
-                                <a href="/delete/{{row.id}}" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure to delete?')">Delete</a>
+                                <a href="" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#modaledit{{row.id}}">Ver</a>
+                                <a href="/delete/{{row.id}}" class="btn btn-danger btn-xs" onclick="return confirm('¿Está seguro de Borrar el producto?')">Borrar</a>
                             </td>
                         </tr>
 
-                <!-- Modal Edit Employee -->
+                <!-- @note - Modal Edit Products -->
                 <div id="modaledit{{row.id}}" class="modal fade" role="dialog">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h4 class="modal-title">Update Information</h4>
+                                <h4 class="modal-title">Actualizar Información</h4>
                             </div>
                             <div class="modal-body">
                                 <form action="{{ url_for('update' ) }}" method="post">
                                     <div class="form-group">
-                                        <label>Name:</label>
+                                        <label>Producto:</label>
                                         <input type="hidden" name="id" value="{{row.id}}">
-                                        <input type="text" name="name" value="{{row.name}}" class="form-control">
+                                        <input type="text" name="nombre_producto" value="{{row.nombre_producto}}" class="form-control">
                                     </div>
                                     <div class="form-group">
-                                        <label>Email:</label>
-                                        <input type="email" name="email" value="{{row.email}}" class="form-control">
+                                        <label>SKU:</label>
+                                        <input type="text" name="sku" value="{{row.sku}}" class="form-control">
                                     </div>
                                     <div class="form-group">
-                                        <label>Phone:</label>
-                                        <input type="number" name="phone" value="{{row.phone}}" class="form-control">
+                                        <label>Marca:</label>
+                                        <select>
+                                            {% for marca in marca_data %}
+                                                <option value=marca.id>{{marca.marca}}</option>
+                                            {% endfor %}
+                                        </select>
                                     </div>
                                     <div class="form-group">
-                                        <button type="submit" class="btn btn-primary">Update</button>
+                                        <label>Categoría:</label>
+                                        <select>
+                                            {% for categoria in categoria_data %}
+                                                <optgroup label="{{categoria.categoria}}">
+                                                    {% for sub_categoria in sub_categoria_data %}
+                                                        {% if sub_categoria.padre == categoria.id %}
+                                                            <option value="{{categoria.id}}-{{sub_categoria.id}}">{{sub_categoria.sub_categoria}}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </optgroup>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Costo sin IVA:</label>
+                                        <input type="number" name="costo_sin_iva" value="{{row.costo_sin_iva}}" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-primary">Actualizar</button>
                                     </div>
 
                                 </form>
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                             </div>
                         </div>
                     </div>

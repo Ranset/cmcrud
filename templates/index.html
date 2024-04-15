@@ -70,16 +70,20 @@
                                         <input type="text" name="sku" value="{{row.sku}}" class="form-control">
                                     </div>
                                     <div class="form-group">
+                                        <label>Modelo:</label>
+                                        <input type="text" name="modelo" value="{{row.modelo}}" class="form-control">
+                                    </div>
+                                    <div class="form-group">
                                         <label>Marca:</label>
-                                        <select>
+                                        <select name="marca">
                                             {% for marca in marca_data %}
-                                                <option value=marca.id>{{marca.marca}}</option>
+                                                <option value="{{marca.id}}">{{marca.marca}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label>Categoría:</label>
-                                        <select>
+                                        <select name="categoria_and_subcat">
                                             {% for categoria in categoria_data %}
                                                 <optgroup label="{{categoria.categoria}}">
                                                     {% for sub_categoria in sub_categoria_data %}
@@ -113,29 +117,55 @@
                     </table>
                 </div>
 
-                <!-- Modal Add Employee -->
-                {# <div id="mymodal" class="modal fade" role="dialog">
+                <!-- @note - Modal Insert Products -->
+                <div id="mymodal" class="modal fade" role="dialog">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h4 class="modal-title">Add Employee</h4>
+                                <h4 class="modal-title">Agregar Productos</h4>
                             </div>
                             <div class="modal-body">
                                 <form action="{{ url_for('insert' ) }}" method="post">
                                     <div class="form-group">
-                                        <label>Name:</label>
-                                        <input type="text" name="name" required="1" class="form-control">
+                                        <label>Producto:</label>
+                                        <input type="text" name="nombre_producto" value="" class="form-control">
                                     </div>
                                     <div class="form-group">
-                                        <label>Email:</label>
-                                        <input type="email" name="email" required="1" class="form-control">
+                                        <label>SKU:</label>
+                                        <input type="text" name="sku" value="" class="form-control">
                                     </div>
                                     <div class="form-group">
-                                        <label>Phone:</label>
-                                        <input type="number" name="phone" required="1" class="form-control">
+                                        <label>Modelo:</label>
+                                        <input type="text" name="modelo" value="" class="form-control">
                                     </div>
                                     <div class="form-group">
-                                        <button type="submit" class="btn btn-primary">Add Employee</button>
+                                        <label>Marca:</label>
+                                        <select name="marca">
+                                            {% for marca in marca_data %}
+                                                <option value="{{marca.id}}">{{marca.marca}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Categoría:</label>
+                                        <select name="categoria_and_subcat">
+                                            {% for categoria in categoria_data %}
+                                                <optgroup label="{{categoria.categoria}}">
+                                                    {% for sub_categoria in sub_categoria_data %}
+                                                        {% if sub_categoria.padre == categoria.id %}
+                                                            <option value="{{categoria.id}}-{{sub_categoria.id}}">{{sub_categoria.sub_categoria}}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </optgroup>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Costo sin IVA:</label>
+                                        <input type="number" name="costo_sin_iva" value="" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-primary">Agregar</button>
                                     </div>
 
                                 </form>
@@ -145,7 +175,7 @@
                             </div>
                         </div>
                     </div>
-                </div> #}
+                </div>
 
             </div>
         </div>

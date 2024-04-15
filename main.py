@@ -75,6 +75,7 @@ def index():
         Categoria.categoria,
         SubCategoria.sub_categoria,
         Productos.marca,
+        Productos.modelo,
         Productos.id,
         Productos.costo_sin_iva
         ).\
@@ -87,8 +88,6 @@ def index():
     categoria_campos = db.session.query(Categoria.id, Categoria.categoria)
 
     sub_categoria_campos = db.session.query(SubCategoria.id, SubCategoria.padre, SubCategoria.sub_categoria)
-
-    print(productos_con_detalle)
 
     context = {
         "all_data" : productos_con_detalle,
@@ -105,12 +104,15 @@ def insert():
 
         sku = request.form['sku']
         nombre_producto = request.form['nombre_producto']
-        categoria = request.form['categoria']
-        sub_categoria = request.form['sub_categoria']
+        
+        categoria_and_subcat = request.form['categoria_and_subcat']
+        
+        categoria = categoria_and_subcat.split('-')[0]
+        sub_categoria = categoria_and_subcat.split('-')[1]
         marca = request.form['marca']
         modelo = request.form['modelo']
         costo_sin_iva = request.form['costo_sin_iva']
-        costo_con_iva = costo_sin_iva * 1.16
+        costo_con_iva = int(costo_sin_iva) * 1.16
 
         my_data = Productos(sku, nombre_producto, categoria, sub_categoria, marca, modelo, costo_sin_iva, costo_con_iva)
         db.session.add(my_data)
@@ -125,15 +127,36 @@ def update():
     if request.method == 'POST':
         my_data = Productos.query.get(request.form.get('id')) # Se puede obtener también con get
 
-        my_data.name = request.form['nombre_producto']
-        my_data.email = request.form['email']
-        my_data.phone = request.form['phone']
+        my_data.sku = request.form['sku']
+        my_data.nombre_producto = request.form['nombre_producto']
+        
+        categoria_and_subcat = request.form['categoria_and_subcat']
+        
+        my_data.categoria = categoria_and_subcat.split('-')[0]
+        my_data.sub_categoria = categoria_and_subcat.split('-')[1]
+        my_data.marca = request.form['marca']
+        my_data.modelo = request.form['modelo']
+
+        costo_sin_iva = request.form['costo_sin_iva']
+
+        my_data.costo_sin_iva = costo_sin_iva
+        my_data.costo_con_iva = int(costo_sin_iva) * 1.16
 
         db.session.commit()
 
         flash('Producto actualizado')
 
         return redirect(url_for('index'))
+    
+@app.route('/delete/<id>/', methods= ['GET','POST'])
+def delete(id):
+    my_data = Productos.query.get(id)
+    db.session.delete(my_data)
+    db.session.commit()
+
+    flash('Producto Borrado')
+
+    return redirect(url_for('index'))
 
 # FIN Endpoints
 

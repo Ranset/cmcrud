@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_admin import Admin
+from flask_admin.contrib.sqlamodel import ModelView
 
 app = Flask(__name__)
 
@@ -63,6 +65,9 @@ class Productos(db.Model):
         self.modelo = modelo
         self.costo_con_iva = costo_con_iva
         self.costo_sin_iva = costo_sin_iva
+
+    def __repr__(self) -> str:
+        return self.nombre_producto
 
 # FIN Modelos
 
@@ -159,6 +164,17 @@ def delete(id):
     return redirect(url_for('index'))
 
 # FIN Endpoints
+
+# @note - Admin
+admin = Admin(app)
+
+# Agregamos los medelos a la view del Admin
+admin.add_view(ModelView(Productos, db.session))
+admin.add_view(ModelView(Categoria, db.session))
+admin.add_view(ModelView(SubCategoria, db.session))
+admin.add_view(ModelView(Marca, db.session))
+
+# FIN Admin
 
 if __name__ == '__main__':
     app.run(debug=True)

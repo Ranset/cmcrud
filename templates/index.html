@@ -10,7 +10,7 @@
         <div class="row">
             <div class="col md-12">
                 <div class="jumbotron p-3">
-                    <h2>Gestión de <b>Productos</b> <button type="button" class="btn btn-success float-right" data-toggle="modal" data-target="#mymodal">Agregar Productos</button></h2>
+                    <h2>Gestión de <b>Productos</b> <button type="button" class="btn btn-success float-right" data-toggle="modal" data-target="#mymodal">Agregar Productos</button><button type="button" id="btn_print" class="btn btn-success float-right">Imprimir</button></h2>
 
                     <!-- Mensaje de producto agregado -->
                     {% with messages = get_flashed_messages()  %}
@@ -28,7 +28,7 @@
                         
                     {% endwith %}
 
-                    <table class="table table-hover table-dark">
+                    <table class="table table-hover table-dark" id="html_table">
 
                         <tr>
                             <th>SKU</th>
@@ -117,6 +117,10 @@
                     </table>
                 </div>
 
+                {# @note - Table de libreria #}
+                <div id="wrapper"></div>
+                <div id="example-table"></div>
+
                 <!-- @note - Modal Insert Products -->
                 <div id="mymodal" class="modal fade" role="dialog">
                     <div class="modal-dialog">
@@ -180,4 +184,39 @@
             </div>
         </div>
     </div>
+
+    {# @note - JS Tabla #}
+    <input id="test_id" type="text" value="{{test}}" hidden>
+
+    <script>
+        var js_test = document.getElementById("test_id").value;
+
+        new gridjs.Grid({
+            columns: ["SKU", "PRODUCTO", "CATEGORIA", "SUB-CATEGORIA"],
+            data: JSON.parse("[" + js_test + "]"),
+            search: true
+        }).render(document.getElementById("wrapper"));
+    </script>
+
+    <script>
+        var table = new Tabulator("#html_table", {
+            rowHeader:{headerSort:false, resizable: false, frozen:true, headerHozAlign:"center", hozAlign:"center", formatter:"rowSelection", titleFormatter:"rowSelection", cellClick:function(e, cell){
+                cell.getRow().toggleSelect();
+            }},
+            printAsHtml:true, //enable html table printing
+            printStyled:true, //copy Tabulator styling to HTML table
+            printHeader:"<h1>Example Table Header<h1>",
+            printFooter:"<h2>Example Table Footer<h2>",
+            columns:[],
+        });
+
+        table.on("rowClick", function(e, row){
+            alert("Row " + row.getData().sku + " Clicked!!!!")
+        });
+
+        //print button
+        document.getElementById("btn_print").addEventListener("click", function(){
+            table.print(false, true);
+        });
+    </script>
 {% endblock %}

@@ -94,11 +94,15 @@ def index():
 
     sub_categoria_campos = db.session.query(SubCategoria.id, SubCategoria.padre, SubCategoria.sub_categoria)
 
+    for row in sub_categoria_campos:
+        print(row)
+
     context = {
         "all_data" : productos_con_detalle,
         "marca_data" : marca_campos,
         "categoria_data" : categoria_campos,
         "sub_categoria_data" : sub_categoria_campos,
+        "test" : '["Mark", "mark@gmail.com", "(01) 22 888 4444"],["Carlos", "carlos@gmail.com", "(01) 22 888 2222"]'
     }
 
     return render_template('index.html', **context)

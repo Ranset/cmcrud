@@ -82,7 +82,8 @@ def index():
         Productos.marca,
         Productos.modelo,
         Productos.id,
-        Productos.costo_sin_iva
+        Productos.costo_sin_iva,
+        Productos.costo_con_iva
         ).\
     join(Categoria, Productos.categoria == Categoria.id).\
     join(SubCategoria, Productos.sub_categoria == SubCategoria.id).\

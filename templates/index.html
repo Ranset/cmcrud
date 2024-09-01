@@ -2,7 +2,7 @@
 {% include "header.html" %}
 
 {% block title %}
-    HOME    
+    Insertar    
 {% endblock %}
 
 {% block body %}
@@ -10,7 +10,12 @@
         <div class="row">
             <div class="col md-12">
                 <div class="jumbotron p-3">
-                    <h2>Gestión de <b>Productos</b> <button type="button" class="btn btn-success float-right" data-toggle="modal" data-target="#mymodal">Agregar Productos</button><button type="button" id="btn_print" class="btn btn-success float-right">Imprimir</button></h2>
+                    <h2>Gestión de <b>Productos</b> 
+                        <!-- <button type="button" class="btn btn-success float-right" data-toggle="modal" data-target="#mymodal">Agregar Productos</button> -->
+                        <a class="btn btn-success float-right" href="{{ url_for('insert' ) }}">Agregar Productos</a>
+                        <button type="button" id="btn_print" class="btn btn-success float-right">Imprimir</button>
+                        <button type="button" id="btn_delete" class="btn btn-danger float-right">Borrar</button>
+                    </h2>
 
                     <!-- Mensaje de producto agregado -->
                     {% with messages = get_flashed_messages()  %}
@@ -27,7 +32,8 @@
                         {% endif %}
                         
                     {% endwith %}
-
+                    
+                    <!-- @note - Table -->
                     <table class="table table-hover table-dark" id="html_table">
 
                         <tr>
@@ -35,9 +41,14 @@
                             <th tabulator-headerFilter="input">SKU</th>
                             <th tabulator-headerFilter="input">PRODUCTO</th>
                             <th tabulator-headerFilter="list" tabulator-headerFilterParams="{valuesLookup:true, clearable:true}}">CATEGORIA</th>
-                            <th>SUB-CATEGORIA</th>
+                            <th>SUB_CATEGORIA</th>
+                            <th>MARCA</th>
+                            <th>MODELO</th>
                             <th>COSTO</th>
-                            <th>PDV</th>
+                            <th tabulator-visible="false">COSTO_SIN_IVA</th>
+                            <th>PESO</th>
+                            <th tabulator-visible="false">CAMBIO_DOLAR</th>
+                            <th tabulator-visible="false">COSTO_KG</th>
                         </tr>
 
                         {% for row in all_data %}
@@ -48,8 +59,13 @@
                             <td>{{row.nombre_producto}}</td>
                             <td>{{row.categoria}}</td>
                             <td>{{row.sub_categoria}}</td>
+                            <td>{{row.marca}}</td>
+                            <td>{{row.modelo}}</td>
                             <td>{{row.costo_con_iva}}</td>
-                            <td>{{row.costo_con_iva * 1.40}}</td>
+                            <td>{{row.costo_sin_iva}}</td>
+                            <td>{{row.peso}}</td>
+                            <td>{{cambio_dolar}}</td>
+                            <td>{{costo_kg_cuba}}</td>
                         </tr>
 
                 
@@ -120,13 +136,13 @@
                     </table>
                 </div>
 
-                <!-- @note - New Modal -->
-                <div class="modal fade" role="dialog" tabindex="-1" id="modal-1">
+                <!-- @note - Modal Details -->
+                <div class="modal fade" role="dialog" tabindex="-1" id="modal-details">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header"><button class="close" type="button" aria-label="Close" data-dismiss="modal"><span aria-hidden="true">×</span></button>
-                                <h4 class="modal-title" style="font-size: 28px;">NOMBRE DEL PRODUCTO</h4>
-                                <p>SKU: 12354</p>
+                                <h4 id="prod-name" class="modal-title" style="font-size: 28px;">NOMBRE DEL PRODUCTO</h4>
+                                <p>SKU: <span id="prod-sku">12354</span></p>
                             </div>
                             <div class="modal-body">
                                 <div class="table-responsive">
@@ -141,21 +157,40 @@
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td>Cell 1</td>
-                                                <td>Cell 2</td>
-                                                <td>Cell 3</td>
-                                                <td>Cell 3</td>
+                                                <td id="prod-categoria">Cell 1</td>
+                                                <td id="prod-sub-categoria">Cell 2</td>
+                                                <td id="prod-marca">Cell 3</td>
+                                                <td id="prod-modelo">Cell 3</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
                                 <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <caption class="text-center">VENTAS MÉXICO</caption>
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>COSTO CON IVA</th>
+                                                <th>COSTO SIN IVA</th>
+                                                <th>COSTO USD</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td id="prod-costo-coniva">Cell 1</td>
+                                                <td id="prod-costo-siniva">Cell 2</td>
+                                                <td id="prod-costo-usd">Cell 3</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-condensed">
+                                        <caption class="text-center" style="padding: 3px 0px;">VENTAS MÉXICO</caption>
                                         <thead>
                                             <tr>
                                                 <th colspan="3">MAYOREO</th>
                                                 <th colspan="2">PROMO</th>
+                                                <th colspan="3">LISTA</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -165,25 +200,88 @@
                                                 <td>25%</td>
                                                 <td>30%</td>
                                                 <td>35%</td>
+                                                <td>40%</td>
+                                                <td>50%</td>
+                                                <td>60%</td>
                                             </tr>
                                             <tr>
-                                                <td>$15</td>
-                                                <td>$20</td>
-                                                <td>$25</td>
-                                                <td>$30</td>
-                                                <td>$35</td>
+                                                <td>$<span id="prod-precio-15porciento">45000</span></td>
+                                                <td>$<span id="prod-precio-20porciento">45000.25</span></td>
+                                                <td>$<span id="prod-precio-25porciento">45000.25</span></td>
+                                                <td>$<span id="prod-precio-30porciento">299</span></td>
+                                                <td>$<span id="prod-precio-35porciento">45000.25</span></td>
+                                                <td>$<span id="prod-precio-40porciento">45000.25</span></td>
+                                                <td>$<span id="prod-precio-50porciento">45000.25</span></td>
+                                                <td>$<span id="prod-precio-60porciento">45000.25</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-condensed">
+                                        <caption class="text-center" id="row-title-cub">VENTAS CUBA</caption>
+                                        <thead>
+                                            <tr>
+                                                <th colspan="3">MAYOREO</th>
+                                                <th colspan="2">PROMO</th>
+                                                <th colspan="3">LISTA</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="row-subheader">
+                                                <td>20%</td>
+                                                <td>25%</td>
+                                                <td>30%</td>
+                                                <td>40%</td>
+                                                <td>50%</td>
+                                                <td>60%</td>
+                                                <td>70%</td>
+                                                <td>80%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>$<span id="prod-precio-20-cub">45000</span></td>
+                                                <td>$<span id="prod-precio-25-cub">45000</span></td>
+                                                <td>$<span id="prod-precio-30-cub">45000</span></td>
+                                                <td>$<span id="prod-precio-40-cub">45000</span></td>
+                                                <td>$<span id="prod-precio-50-cub">45000</span></td>
+                                                <td>$<span id="prod-precio-60-cub">45000</span></td>
+                                                <td>$<span id="prod-precio-70-cub">45000</span></td>
+                                                <td>$<span id="prod-precio-80-cub">45000</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <caption id="row-title-envio">Envío:</caption>
+                                        <thead>
+                                            <tr>
+                                                <th>PESO (KG)</th>
+                                                <th>COSTO ENVÍO</th>
+                                                <th>PUESTO EN CUBA</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td id="prod-peso">Cell 1</td>
+                                                <td id="prod-costo-envio">Cell 2</td>
+                                                <td id="prod-puesto-en-cuba">Cell 3</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
-                            <div class="modal-footer"><button class="btn btn-default" type="button" data-dismiss="modal">Close</button></div>
+                            <div class="modal-footer" id="product-modal-footer">
+                                <button class="btn btn-primary" type="button">Editar</button>
+                                <button class="btn btn-default" type="button" data-dismiss="modal">Cerrar</button>
+                            </div>
                         </div>
                     </div>
                 </div>
+                <!-- END Modal Details -->
 
                 {# @note - Table de libreria #}
-                <div id="wrapper"></div>
+                {# <div id="wrapper"></div> #}
                 <div id="example-table"></div>
 
                 <!-- @note - Modal Insert Products -->
@@ -194,50 +292,7 @@
                                 <h4 class="modal-title">Agregar Productos</h4>
                             </div>
                             <div class="modal-body">
-                                <form action="{{ url_for('insert' ) }}" method="post">
-                                    <div class="form-group">
-                                        <label>Producto:</label>
-                                        <input type="text" name="nombre_producto" value="" class="form-control">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>SKU:</label>
-                                        <input type="text" name="sku" value="" class="form-control">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Modelo:</label>
-                                        <input type="text" name="modelo" value="" class="form-control">
-                                    </div>
-                                    <div>
-                                        <label>Marca:</label>
-                                        <select class="form-select form-select-lg mb-3" name="marca">
-                                            {% for marca in marca_data %}
-                                                <option value="{{marca.id}}">{{marca.marca}}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Categoría:</label>
-                                        <select name="categoria_and_subcat">
-                                            {% for categoria in categoria_data %}
-                                                <optgroup label="{{categoria.categoria}}">
-                                                    {% for sub_categoria in sub_categoria_data %}
-                                                        {% if sub_categoria.padre == categoria.id %}
-                                                            <option value="{{categoria.id}}-{{sub_categoria.id}}">{{sub_categoria.sub_categoria}}</option>
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                </optgroup>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Costo sin IVA:</label>
-                                        <input type="number" name="costo_sin_iva" value="" class="form-control">
-                                    </div>
-                                    <div class="form-group">
-                                        <button type="submit" class="btn btn-primary">Agregar</button>
-                                    </div>
-
-                                </form>
+                                
                             </div>
                             <div class="modal-footer">
                                 <button class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -254,6 +309,7 @@
     <input id="test_id" type="text" value="{{test}}" hidden>
 
     <script>
+        /*
         var js_test = document.getElementById("test_id").value;
 
         new gridjs.Grid({
@@ -261,6 +317,7 @@
             data: JSON.parse("[" + js_test + "]"),
             search: true
         }).render(document.getElementById("wrapper"));
+        */
     </script>
 
     <script>
@@ -270,20 +327,86 @@
             }},
             printAsHtml:true, //enable html table printing
             printStyled:true, //copy Tabulator styling to HTML table
-            printHeader:"<h1>Example Table Header<h1>",
-            printFooter:"<h2>Example Table Footer<h2>",
+            layout:"fitColumns",
+            printHeader:"<h1>Cabecera<h1>",
+            printFooter:"<h2>Pie<h2>",
             columns:[],
         });
 
+        table.on("tableBuilt", function(){
+            table.deleteRow(10);
+        });
+
+        //Click en fila de tabla
         table.on("rowClick", function(e, row){
-            //alert("Row " + row.getData().producto + " Clicked!!!!")
-            // $('#modaledit'+ row.getData().id).modal('show'); // abrir
-            $('#modal-1').modal('show'); // abrir
+            $("#prod-name").text(row.getData().producto);
+            $("#prod-sku").text(row.getData().sku);
+
+            $("#prod-categoria").text(row.getData().categoria);
+            $("#prod-sub-categoria").text(row.getData().sub_categoria);
+            $("#prod-marca").text(row.getData().marca);
+            $("#prod-modelo").text(row.getData().modelo);
+
+            $("#prod-costo-coniva").text(row.getData().costo);
+            $("#prod-costo-siniva").text(row.getData().costo_sin_iva);
+            let costo_usd = (row.getData().costo_sin_iva / "{{cambio_dolar}}").toFixed(2);
+            $("#prod-costo-usd").text(costo_usd);
+
+            $("#prod-precio-15porciento").text(Math.ceil(row.getData().costo * 1.15));
+            $("#prod-precio-20porciento").text(Math.ceil(row.getData().costo * 1.20));
+            $("#prod-precio-25porciento").text(Math.ceil(row.getData().costo * 1.25));
+            $("#prod-precio-30porciento").text(Math.ceil(row.getData().costo * 1.30));
+            $("#prod-precio-35porciento").text(Math.ceil(row.getData().costo * 1.35));
+            $("#prod-precio-40porciento").text(Math.ceil(row.getData().costo * 1.40));
+            $("#prod-precio-50porciento").text(Math.ceil(row.getData().costo * 1.50));
+            $("#prod-precio-60porciento").text(Math.ceil(row.getData().costo * 1.60));
+
+            let peso = row.getData().peso;
+            $("#prod-peso").text(peso);
+            let costo_envio = peso * "{{costo_kg_cuba}}";
+            $("#prod-costo-envio").text(costo_envio);
+            let puesto_en_cuba = Number(costo_envio) + Number(costo_usd);
+            $("#prod-puesto-en-cuba").text(puesto_en_cuba);
+            
+            $("#prod-precio-20-cub").text(Math.ceil(puesto_en_cuba * 1.20));
+            $("#prod-precio-25-cub").text(Math.ceil(puesto_en_cuba * 1.25));
+            $("#prod-precio-30-cub").text(Math.ceil(puesto_en_cuba * 1.30));
+            $("#prod-precio-40-cub").text(Math.ceil(puesto_en_cuba * 1.40));
+            $("#prod-precio-50-cub").text(Math.ceil(puesto_en_cuba * 1.50));
+            $("#prod-precio-60-cub").text(Math.ceil(puesto_en_cuba * 1.60));
+            $("#prod-precio-70-cub").text(Math.ceil(puesto_en_cuba * 1.70));
+            $("#prod-precio-80-cub").text(Math.ceil(puesto_en_cuba * 1.80));
+
+            $('#modal-details').modal('show'); // abrir
         });
 
         //print button
         document.getElementById("btn_print").addEventListener("click", function(){
             table.print(false, true);
+        });
+        
+        // Delete button
+        document.getElementById("btn_delete").addEventListener("click", function(){
+            var selectedData = table.getSelectedData(); //get array of currently selected data.
+            var selectedRows = table.getSelectedRows(); //get array of currently selected rows.
+
+            if (confirm("¿Confirma borrar los productos seleccionados?")) {
+                fetch('http://127.0.0.1:5000/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ array: selectedData })
+                    }).then(function(response) {
+                        //location.reload(); // Reload page from this because redirect(url_for()) dont't work if the post come from js
+                        for (let i = 0; i < selectedRows.length; i++) {
+                            let rowToDelete = selectedRows[i];
+                            rowToDelete.delete();
+                        };
+                    });
+            };
+
+            
         });
     </script>
 {% endblock %}

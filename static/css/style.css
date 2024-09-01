@@ -1,3 +1,32 @@
 .jumbotron {
     padding: 10px;
 }
+
+th {
+  text-align: center;
+}
+
+tr {
+  text-align: center;
+}
+
+caption {
+  font-weight: bold;
+  font-size: 20px;
+  background: #009e49;
+  color: white;
+}
+
+.row-subheader {
+  font-weight: bold;
+}
+
+#row-title-cub {
+  background: rgb(228,14,0);
+  padding: 3px 0px;
+}
+
+#row-title-envio {
+  background: rgba(0,158,73,0);
+  color: rgb(0,0,0);
+}

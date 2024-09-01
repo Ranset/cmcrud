@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
 from flask_admin.contrib.sqlamodel import ModelView
@@ -55,8 +55,9 @@ class Productos(db.Model):
     modelo = db.Column(db.String(50), nullable=True)
     costo_con_iva = db.Column(db.Integer, nullable=True)
     costo_sin_iva = db.Column(db.Integer, nullable=True)
+    peso = db.Column(db.Float, nullable=True)
     
-    def __init__(self, sku: str, nombre_producto: str, categoria: int, sub_categoria: int, marca: int, modelo: str, costo_sin_iva: float, costo_con_iva: float):
+    def __init__(self, sku: str, nombre_producto: str, categoria: int, sub_categoria: int, marca: int, modelo: str, costo_sin_iva: float, costo_con_iva: float, peso: float):
         self.sku = sku
         self.nombre_producto = nombre_producto
         self.categoria = categoria
@@ -65,9 +66,17 @@ class Productos(db.Model):
         self.modelo = modelo
         self.costo_con_iva = costo_con_iva
         self.costo_sin_iva = costo_sin_iva
+        self.peso = peso
 
     def __repr__(self) -> str:
         return self.nombre_producto
+    
+class Config(db.Model):
+    __tablename__ = 'config'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    Clave = db.Column(db.String(50), nullable=True)
+    Valor = db.Column(db.String(50), nullable=True)
 
 # FIN Modelos
 
@@ -79,36 +88,31 @@ def index():
         Productos.nombre_producto,
         Categoria.categoria,
         SubCategoria.sub_categoria,
-        Productos.marca,
+        Marca.marca,
         Productos.modelo,
         Productos.id,
         Productos.costo_sin_iva,
-        Productos.costo_con_iva
+        Productos.costo_con_iva,
+        Productos.peso
         ).\
     join(Categoria, Productos.categoria == Categoria.id).\
     join(SubCategoria, Productos.sub_categoria == SubCategoria.id).\
     join(Marca, Productos.marca == Marca.id).all()
 
-    marca_campos = db.session.query(Marca.id, Marca.marca)
-
-    categoria_campos = db.session.query(Categoria.id, Categoria.categoria)
-
-    sub_categoria_campos = db.session.query(SubCategoria.id, SubCategoria.padre, SubCategoria.sub_categoria)
-
-    for row in sub_categoria_campos:
-        print(row)
+    cambio_dolar = db.session.query(Config.Valor).filter(Config.Clave == "cambio_dolar").first()[0]
+    
+    costo_kg_cuba = db.session.query(Config.Valor).filter(Config.Clave == "costo_kg_cuba").first()[0]
 
     context = {
         "all_data" : productos_con_detalle,
-        "marca_data" : marca_campos,
-        "categoria_data" : categoria_campos,
-        "sub_categoria_data" : sub_categoria_campos,
+        "cambio_dolar" : cambio_dolar,
+        "costo_kg_cuba" : costo_kg_cuba,
         "test" : '["Mark", "mark@gmail.com", "(01) 22 888 4444"],["Carlos", "carlos@gmail.com", "(01) 22 888 2222"]'
     }
 
     return render_template('index.html', **context)
 
-@app.route('/insert', methods = ['POST']) # type: ignore
+@app.route('/insert', methods = ['GET','POST']) # type: ignore
 def insert():
     if request.method == 'POST':
 
@@ -123,14 +127,28 @@ def insert():
         modelo = request.form['modelo']
         costo_sin_iva = request.form['costo_sin_iva']
         costo_con_iva = int(costo_sin_iva) * 1.16
+        peso = request.form['peso']
 
-        my_data = Productos(sku, nombre_producto, categoria, sub_categoria, marca, modelo, costo_sin_iva, costo_con_iva)
+        my_data = Productos(sku, nombre_producto, categoria, sub_categoria, marca, modelo, costo_sin_iva, costo_con_iva,peso)
         db.session.add(my_data)
         db.session.commit()
 
         flash('Producto insertado en la base de datos') # Mensaje flask insertar
         
         return redirect(url_for('index'))
+    
+    # method != POST
+    marca_campos = db.session.query(Marca.id, Marca.marca)
+    categoria_campos = db.session.query(Categoria.id, Categoria.categoria)
+    sub_categoria_campos = db.session.query(SubCategoria.id, SubCategoria.padre, SubCategoria.sub_categoria)
+
+    context = {
+        "marca_data" : marca_campos,
+        "categoria_data" : categoria_campos,
+        "sub_categoria_data" : sub_categoria_campos,
+    }
+    
+    return render_template('insert.html', **context)
     
 @app.route('/update', methods = ['GET','POST']) # type: ignore
 def update():
@@ -158,15 +176,26 @@ def update():
 
         return redirect(url_for('index'))
     
-@app.route('/delete/<id>/', methods= ['GET','POST'])
-def delete(id):
-    my_data = Productos.query.get(id)
-    db.session.delete(my_data)
-    db.session.commit()
+@app.route('/delete', methods= ['POST'])
+def delete():
+    data = request.json  # Obtener el JSON enviado en la solicitud
+    if data:
+        array = data.get('array')  # Extraer el array del JSON
+        for data in array:
+            id = data['id']
+            my_data = Productos.query.get(id)
+            db.session.delete(my_data)
+            db.session.commit()
 
-    flash('Producto Borrado')
+        flash('Producto Borrado')
+        return redirect(url_for('index'))
+        
+    else:
+        return jsonify({"message": "No se recibió ningún array"}), 400
 
-    return redirect(url_for('index'))
+
+    # flash('Producto Borrado')
+
 
 # FIN Endpoints
 
@@ -174,7 +203,7 @@ def delete(id):
 admin = Admin(app)
 
 # Agregamos los medelos a la view del Admin
-admin.add_view(ModelView(Productos, db.session))
+# admin.add_view(ModelView(Productos, db.session))
 admin.add_view(ModelView(Categoria, db.session))
 admin.add_view(ModelView(SubCategoria, db.session))
 admin.add_view(ModelView(Marca, db.session))

@@ -185,7 +185,7 @@
                                 </div>
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-condensed">
-                                        <caption class="text-center" style="padding: 3px 0px;">VENTAS MÉXICO</caption>
+                                        <caption class="text-center" style="padding: 3px 0px;">VENTAS MÉXICO (MXN)</caption>
                                         <thead>
                                             <tr>
                                                 <th colspan="3">MAYOREO</th>
@@ -219,7 +219,7 @@
                                 </div>
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-condensed">
-                                        <caption class="text-center" id="row-title-cub">VENTAS CUBA</caption>
+                                        <caption class="text-center" id="row-title-cub">VENTAS CUBA (USD)</caption>
                                         <thead>
                                             <tr>
                                                 <th colspan="3">MAYOREO</th>
@@ -272,7 +272,7 @@
                                 </div>
                             </div>
                             <div class="modal-footer" id="product-modal-footer">
-                                <button class="btn btn-primary" type="button">Editar</button>
+                                <button class="btn btn-primary" type="button" onclick="window.location.href='{{ url_for('update') }}';">Editar</button>
                                 <button class="btn btn-default" type="button" data-dismiss="modal">Cerrar</button>
                             </div>
                         </div>
@@ -309,18 +309,6 @@
     <input id="test_id" type="text" value="{{test}}" hidden>
 
     <script>
-        /*
-        var js_test = document.getElementById("test_id").value;
-
-        new gridjs.Grid({
-            columns: ["SKU", "PRODUCTO", "CATEGORIA", "SUB-CATEGORIA"],
-            data: JSON.parse("[" + js_test + "]"),
-            search: true
-        }).render(document.getElementById("wrapper"));
-        */
-    </script>
-
-    <script>
         var table = new Tabulator("#html_table", {
             rowHeader:{headerSort:false, resizable: false, frozen:true, headerHozAlign:"center", hozAlign:"center", formatter:"rowSelection", titleFormatter:"rowSelection", cellClick:function(e, cell){
                 cell.getRow().toggleSelect();
@@ -328,8 +316,8 @@
             printAsHtml:true, //enable html table printing
             printStyled:true, //copy Tabulator styling to HTML table
             layout:"fitColumns",
-            printHeader:"<h1>Cabecera<h1>",
-            printFooter:"<h2>Pie<h2>",
+            printHeader:"<h1>Productos<h1>",
+            printFooter:"<h2>CM Cancún<h2>",
             columns:[],
         });
 
@@ -349,7 +337,7 @@
 
             $("#prod-costo-coniva").text(row.getData().costo);
             $("#prod-costo-siniva").text(row.getData().costo_sin_iva);
-            let costo_usd = (row.getData().costo_sin_iva / "{{cambio_dolar}}").toFixed(2);
+            let costo_usd = (row.getData().costo / "{{cambio_dolar}}").toFixed(2);
             $("#prod-costo-usd").text(costo_usd);
 
             $("#prod-precio-15porciento").text(Math.ceil(row.getData().costo * 1.15));
@@ -391,7 +379,7 @@
             var selectedRows = table.getSelectedRows(); //get array of currently selected rows.
 
             if (confirm("¿Confirma borrar los productos seleccionados?")) {
-                fetch('http://127.0.0.1:5000/delete', {
+                fetch('{{ url_for("delete") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

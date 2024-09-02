@@ -7,8 +7,9 @@
 {% block body %}
     <div class="jumbotron p-3">
         <dev class="well text-center">
-            <h1>Sistema de Datos CM</h1>
+            <h1>Sistema de Datos CM</h1><span>v0.6</span>
         </dev>
+        <div id="main-menu"><a href={{ url_for('index' ) }}>INICIO</a> | <a href={{ url_for('categoria.index_view' ) }}>ADMIN</a></div>
     </div>
     {# {% if current_user.is_authenticated %}
         <div>

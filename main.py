@@ -1,9 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_admin import Admin
+from sqlalchemy import asc
+from flask_admin import Admin, AdminIndexView, expose
+from flask_admin.menu import MenuLink
 from flask_admin.contrib.sqlamodel import ModelView
 
 app = Flask(__name__)
+
+# Para configurar el contexto app para usar url_for fuera de un script
+app.config['SERVER_NAME'] = '192.168.0.169:8080'
+app.config['APPLICATION_ROOT'] = '/'
+app.config['PREFERRED_URL_SCHEME'] = 'http'
 
 # @note - Config ORM
 app.secret_key = 'MySecretKey'
@@ -125,8 +132,28 @@ def insert():
         sub_categoria = categoria_and_subcat.split('-')[1]
         marca = request.form['marca']
         modelo = request.form['modelo']
-        costo_sin_iva = request.form['costo_sin_iva']
-        costo_con_iva = int(costo_sin_iva) * 1.16
+
+        # Distribuye el iva del costo segun corresponda
+        if not request.form.getlist('iva'):
+            costo_sin_iva = int(request.form['costo_sin_iva'])
+            costo_con_iva = int(costo_sin_iva) * 1.16
+        else:
+            costo_con_iva = int(request.form['costo_sin_iva'])
+            costo_sin_iva = int(costo_con_iva) * 0.84
+
+        # Convierte es costo de dolar a peso mexicano
+        if request.form.get('moneda') == "usd":
+            cambio_dolar = int(db.session.query(Config.Valor).filter(Config.Clave == "cambio_dolar").first()[0])
+
+            print(type(cambio_dolar))
+            print(cambio_dolar)
+
+            costo_con_iva *= cambio_dolar
+            costo_sin_iva *= cambio_dolar
+
+            print("costo con iva:", costo_con_iva)
+            print("costo sin iva:", costo_sin_iva)
+
         peso = request.form['peso']
 
         my_data = Productos(sku, nombre_producto, categoria, sub_categoria, marca, modelo, costo_sin_iva, costo_con_iva,peso)
@@ -135,10 +162,16 @@ def insert():
 
         flash('Producto insertado en la base de datos') # Mensaje flask insertar
         
-        return redirect(url_for('index'))
+        # Comprobar cual de los dos bot'on submit se precion'o
+        action = request.form.get('action')
+
+        if action == 'insertar':
+            return redirect(url_for('index'))
+        else:
+            return redirect(url_for('insert'))
     
     # method != POST
-    marca_campos = db.session.query(Marca.id, Marca.marca)
+    marca_campos = db.session.query(Marca.id, Marca.marca).order_by(asc(Marca.marca)).all()
     categoria_campos = db.session.query(Categoria.id, Categoria.categoria)
     sub_categoria_campos = db.session.query(SubCategoria.id, SubCategoria.padre, SubCategoria.sub_categoria)
 
@@ -176,6 +209,19 @@ def update():
 
         return redirect(url_for('index'))
     
+    # method != POST
+    marca_campos = db.session.query(Marca.id, Marca.marca).order_by(asc(Marca.marca)).all()
+    categoria_campos = db.session.query(Categoria.id, Categoria.categoria)
+    sub_categoria_campos = db.session.query(SubCategoria.id, SubCategoria.padre, SubCategoria.sub_categoria)
+
+    context = {
+        "marca_data" : marca_campos,
+        "categoria_data" : categoria_campos,
+        "sub_categoria_data" : sub_categoria_campos,
+    }
+    
+    return render_template('update.html', **context)
+    
 @app.route('/delete', methods= ['POST'])
 def delete():
     data = request.json  # Obtener el JSON enviado en la solicitud
@@ -200,13 +246,40 @@ def delete():
 # FIN Endpoints
 
 # @note - Admin
-admin = Admin(app)
+# Personalizar columnas que se muestran en las tablas
+class CategoriaModelView(ModelView):
+    column_list = ['id', 'categoria']
+
+class ConfigModelView(ModelView):
+    form_excluded_columns = ['Clave']
+
+# Ocultando pagina Home del admin
+class MyAdminIndexView(AdminIndexView):
+    def is_visible(self):
+        # Esto oculta la página de inicio
+        return False
+    
+    @expose('/')
+    def index(self):
+        return redirect(url_for('categoria.index_view'))  # Redirigir el Admin principal a una vista personalizada
+    
+    def _handle_view(self, name, **kwargs):
+        # Redirige a la primera vista disponible
+        if not self.is_accessible():
+            return redirect(url_for('admin.index'))
+        
+admin = Admin(app, index_view=MyAdminIndexView())
 
 # Agregamos los medelos a la view del Admin
 # admin.add_view(ModelView(Productos, db.session))
-admin.add_view(ModelView(Categoria, db.session))
+admin.add_view(CategoriaModelView(Categoria, db.session))
 admin.add_view(ModelView(SubCategoria, db.session))
 admin.add_view(ModelView(Marca, db.session))
+admin.add_view(ConfigModelView(Config, db.session))
+
+# Agrega un enlace personalizado al menú
+with app.app_context():
+    admin.add_link(MenuLink(name='Salir', category='', url=url_for('index')))
 
 # FIN Admin
 

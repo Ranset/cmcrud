@@ -11,12 +11,13 @@
         <div class="jumbotron p-3" id="jumbo-producto">
             <h2 class="text-uppercase">ACTUALIZAR PRODUCTO</h2>
             <form action="{{ url_for('update' ) }}" method="post">
+                <input  name="id" type="hidden" value="{{producto.id}}">
                 <!-- Start: Row1 -->
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
                             <label class="control-label">Producto:</label>
-                            <input class="form-control" type="text" name="nombre_producto" value="nombre de prueba" required></div>
+                            <input class="form-control" type="text" name="nombre_producto" value="{{producto.nombre_producto}}" required></div>
                     </div>
                 </div><!-- End: Row1 -->
                 <!-- Start: Row2 -->
@@ -24,17 +25,18 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="control-label">SKU:</label>
-                            <input class="form-control" type="text" name="sku" value=""></div>
+                            <input class="form-control" type="text" name="sku" value="{{producto.sku}}"></div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="control-label">Modelo:</label>
-                            <input class="form-control" type="text" name="modelo" value=""></div>
+                            <input class="form-control" type="text" name="modelo" value="{{producto.modelo}}"></div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="control-label">Marca:</label>
                             <select class="form-control" name="marca">
+                                <option selected="true" value="{{marca_id}}">{{marca_id}}{{producto.marca}}</option>
                                 {% for marca in marca_data %}
                                     <option value="{{marca.id}}">{{marca.marca}}</option>
                                 {% endfor %}
@@ -45,6 +47,7 @@
                         <div class="form-group">
                             <label class="control-label">Categoría:</label>
                             <select class="form-control" name="categoria_and_subcat">
+                                <option selected="true" value="{{producto.sub_categoria}}">{{producto.sub_categoria}}</option>
                                 {% for categoria in categoria_data %}
                                     <optgroup label="{{categoria.categoria}}">
                                         {% for sub_categoria in sub_categoria_data %}
@@ -64,7 +67,7 @@
                         <fieldset>
                             <legend>Costo</legend>
                             <div class="col-md-4">
-                                <input class="form-control" type="number" step="0.01" name="costo_sin_iva" value="" required>
+                                <input class="form-control" type="number" step="0.01" name="costo_sin_iva" value="{{producto.costo_con_iva}}" required>
                             </div>
                             <div class="col-md-4">
                                 <span><label class="radio-inline">
@@ -80,12 +83,11 @@
                     <div class="col-md-2">
                         <div class="form-group">
                             <label class="control-label">Peso (Kg):</label>
-                            <input class="form-control" type="number" step="0.01" name="peso" value="">
+                            <input class="form-control" type="number" step="0.01" name="peso" value="{{producto.peso}}">
                         </div>
                     </div>
                     <div class="col-md-4 text-right">
-                        <button class="btn btn-primary" id="btn-insert" type="submit" name="action" value="insertar">Insertar</button>
-                        <button class="btn btn-primary" id="btn-insert-otro" type="submit" name="action" value="otro">Insertar y otro</button>
+                        <button class="btn btn-primary" id="btn-insert" type="submit" name="action" value="actualizar">Actualizar</button>
                         <button class="btn btn-default" id="btn-cancelar" type="button" onclick="window.location.href='{{ url_for('index') }}';">Cancelar</button>
                     </div>
                 </div><!-- End: Row3 -->

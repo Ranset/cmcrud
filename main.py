@@ -182,8 +182,41 @@ def insert():
     }
     
     return render_template('insert.html', **context)
+
+@app.route('/updateproduct', methods=['POST']) # type: ignore
+def updateproduct():
+    product_id = int(request.form['id'])
+    producto = db.session.query(
+        Productos.id,
+        Productos.nombre_producto,
+        Productos.sku,
+        Productos.modelo,
+        Marca.marca,
+        SubCategoria.sub_categoria,
+        Productos.costo_con_iva,
+        Productos.peso
+        ).\
+    join(Categoria, Productos.categoria == Categoria.id).\
+    join(SubCategoria, Productos.sub_categoria == SubCategoria.id).\
+    join(Marca, Productos.marca == Marca.id).filter(Productos.id == product_id).first()
+
+    marca_id = db.session.query(Marca.id).filter(Productos.id == product_id).first()
     
-@app.route('/update', methods = ['GET','POST']) # type: ignore
+    marca_campos = db.session.query(Marca.id, Marca.marca).order_by(asc(Marca.marca)).all()
+    categoria_campos = db.session.query(Categoria.id, Categoria.categoria)
+    sub_categoria_campos = db.session.query(SubCategoria.id, SubCategoria.padre, SubCategoria.sub_categoria)
+
+    context = {
+        "producto" : producto,
+        "marca_data" : marca_campos,
+        "categoria_data" : categoria_campos,
+        "sub_categoria_data" : sub_categoria_campos,
+        "marca_id" : marca_id.id
+    }
+    
+    return render_template('update.html', **context)
+    
+@app.route('/update', methods = ['POST']) # type: ignore
 def update():
     if request.method == 'POST':
         my_data = Productos.query.get(request.form.get('id')) # Se puede obtener también con get
@@ -208,20 +241,7 @@ def update():
         flash('Producto actualizado')
 
         return redirect(url_for('index'))
-    
-    # method != POST
-    marca_campos = db.session.query(Marca.id, Marca.marca).order_by(asc(Marca.marca)).all()
-    categoria_campos = db.session.query(Categoria.id, Categoria.categoria)
-    sub_categoria_campos = db.session.query(SubCategoria.id, SubCategoria.padre, SubCategoria.sub_categoria)
 
-    context = {
-        "marca_data" : marca_campos,
-        "categoria_data" : categoria_campos,
-        "sub_categoria_data" : sub_categoria_campos,
-    }
-    
-    return render_template('update.html', **context)
-    
 @app.route('/delete', methods= ['POST'])
 def delete():
     data = request.json  # Obtener el JSON enviado en la solicitud

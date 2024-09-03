@@ -272,8 +272,11 @@
                                 </div>
                             </div>
                             <div class="modal-footer" id="product-modal-footer">
-                                <button class="btn btn-primary" type="button" onclick="window.location.href='{{ url_for('update') }}';">Editar</button>
-                                <button class="btn btn-default" type="button" data-dismiss="modal">Cerrar</button>
+                                <form action="{{ url_for('updateproduct' ) }}" method="post">
+                                    <input id="id" type="hidden" name="id" value="">
+                                    <button class="btn btn-primary" type="submit">Editar</button>
+                                    <button class="btn btn-default" type="button" data-dismiss="modal">Cerrar</button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -327,6 +330,7 @@
 
         //Click en fila de tabla
         table.on("rowClick", function(e, row){
+            $("#id").val(row.getData().id)
             $("#prod-name").text(row.getData().producto);
             $("#prod-sku").text(row.getData().sku);
 
